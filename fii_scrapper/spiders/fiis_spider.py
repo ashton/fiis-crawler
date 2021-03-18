@@ -6,7 +6,7 @@ class FIISpider(scrapy.Spider):
 
     custom_settings = {
         'ITEM_PIPELINES': {
-            'fii_scrapper.pipelines.FIIMongoPipeline': 100,
+            'fii_scrapper.pipelines.FIIDarkLangPipeline': 100,
         }
     }
 

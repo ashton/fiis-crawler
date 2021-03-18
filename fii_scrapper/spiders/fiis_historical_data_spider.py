@@ -1,22 +1,18 @@
 import re
 import scrapy
+import requests
 from datetime import datetime
-from pymongo import MongoClient
 
 class HistoricalDataSpider(scrapy.Spider):
     name = "historical_data"
     custom_settings = {
         'ITEM_PIPELINES': {
-            'fii_scrapper.pipelines.FIIHistoricalDataMongoPipeline': 100,
+            'fii_scrapper.pipelines.FIIHistoricalDataDarkLangPipeline': 100,
         }
     }
 
-    def __init__(self, urls=[], *args, **kwargs):
-        self.mongo = MongoClient().fiis
-        super(HistoricalDataSpider, self).__init__(*args, **kwargs)
-
     def start_requests(self):
-        fiis = self.mongo.fiis.find({})
+        fiis = requests.get('https://matheusashton-fiis.builtwithdark.com/fiis').json()
 
         for fii in fiis:
             url = 'https://fiis.com.br/%s' % (fii['code'],)
