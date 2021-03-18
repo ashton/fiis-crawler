@@ -31,6 +31,7 @@ class HistoricalDataSpider(scrapy.Spider):
         code = response.css('#fund-ticker::text').get()
         dy = self._parse_dy(summary.css('.item .value::text')[0].get())
         patrimonial_value = self._parse_patrimonial_value(summary.css('.item .value::text')[2].get())
+        p_vp = self._parse_price(summary.css('.item .value::text')[3].get())
         price = self._parse_price(quotations.css('.value::text').get())
         revenues = self._parse_revenues(code, last_revenues)
         news = self._parse_news(code, news)
@@ -42,7 +43,7 @@ class HistoricalDataSpider(scrapy.Spider):
         yield {
             'code': code,
             'dy': dy,
-            'p_vp': patrimonial_value / price,
+            'p_vp': p_vp,
             'last_price': price,
             'date': datetime.now(),
             'revenues': revenues,
