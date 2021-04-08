@@ -15,9 +15,10 @@ class FIIHistoricalDataDarkLangPipeline():
     def process_item(self, item, spider):
         item_dict = ItemAdapter(item).asdict()
         dy = sum(map(lambda i: i['value'], sorted(item_dict['revenues'], key=lambda item: item['date'])[:12]))/item_dict['last_price']*100
-        requests.patch('%s/%s' % (self.url, item_dict['code']), json={"dy": dy})
+        cnpj = item_dict['cnpj']
+        requests.patch('%s/%s' % (self.url, item_dict['code']), json={"dy": dy, "cnpj": cnpj})
 
-        historical_data = {x: item[x] for x in item if x not in ['revenues', 'news']}
+        historical_data = {x: item[x] for x in item if x not in ['revenues', 'news', 'cnpj']}
         historical_data['date'] = historical_data['date'].isoformat()
         requests.post('%s/%s' % (self.url, 'history'), json=historical_data)
 
