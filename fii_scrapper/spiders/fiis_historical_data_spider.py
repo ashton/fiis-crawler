@@ -7,7 +7,7 @@ class HistoricalDataSpider(scrapy.Spider):
     name = "historical_data"
     custom_settings = {
         'ITEM_PIPELINES': {
-            'fii_scrapper.pipelines.FIIHistoricalDataDarkLangPipeline': 100,
+            'fii_scrapper.pipelines.FIIHistoricalDataClojureApiPipeline': 100,
         }
     }
 
@@ -21,7 +21,6 @@ class HistoricalDataSpider(scrapy.Spider):
     def parse(self, response):
         quotations = response.css('#quotations--infos-wrapper')
         summary = response.css('#informations--indexes')
-        last_revenues = response.xpath('//*[@id="last-revenues--table"]/tbody/tr')
         news = response.css('#news--wrapper')
         code = response.css('#fund-ticker::text').get()
         cnpj = self.normalize_cnpj(response.xpath('//*[@id="informations--basic"]/div[2]/div[3]/span[2]//text()').get())
@@ -29,7 +28,6 @@ class HistoricalDataSpider(scrapy.Spider):
         patrimonial_value = self._parse_patrimonial_value(summary.css('.item .value::text')[2].get())
         p_vp = self._parse_price(summary.css('.item .value::text')[3].get())
         price = self._parse_price(quotations.css('.value::text').get())
-        revenues = self._parse_revenues(code, last_revenues)
         news = self._parse_news(code, news)
 
         if not price:
@@ -37,13 +35,12 @@ class HistoricalDataSpider(scrapy.Spider):
 
 
         yield {
-            'cnpj': cnpj,
+            'document': cnpj,
             'code': code,
             'dy': dy,
             'p_vp': p_vp,
             'last_price': price,
             'date': datetime.now(),
-            'revenues': revenues,
             'news': news
         }
 
@@ -67,20 +64,6 @@ class HistoricalDataSpider(scrapy.Spider):
             return float(result) * 1000000000
         else:
             return float(value.replace(',', '.'))
-
-    def _parse_revenues(self, code, revenues_elements):
-        revenues = []
-
-        for row in revenues_elements:
-            regex = re.compile('[^0-9,]')
-            [base_date, date, price, profitability, value] = row.css('td::text').getall()
-            date = datetime.strptime(date, '%d/%m/%y')
-            price = float(regex.sub('', price).replace(',', '.'))
-            profitability = float(profitability.replace('%', '').replace(',', '.'))
-            value = float(regex.sub('', value).replace(',', '.'))
-            revenues.append({ 'code': code, 'date': date, 'base_price': price, 'dy': profitability, 'value': value })
-
-        return revenues
 
     def _parse_news(self, code, news_element):
         news = []
