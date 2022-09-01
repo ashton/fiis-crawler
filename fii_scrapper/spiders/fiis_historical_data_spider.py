@@ -25,8 +25,7 @@ class HistoricalDataSpider(scrapy.Spider):
         code = response.css('#fund-ticker::text').get()
         cnpj = self.normalize_cnpj(response.xpath('//*[@id="informations--basic"]/div[2]/div[3]/span[2]//text()').get())
         dy = self._parse_dy(summary.css('.item .value::text')[0].get())
-        patrimonial_value = self._parse_patrimonial_value(summary.css('.item .value::text')[2].get())
-        p_vp = self._parse_price(summary.css('.item .value::text')[3].get())
+        value_per_quota = self._parse_price(summary.css('.item .value::text')[3].get())
         price = self._parse_price(quotations.css('.value::text').get())
         news = self._parse_news(code, news)
 
@@ -38,7 +37,7 @@ class HistoricalDataSpider(scrapy.Spider):
             'document': cnpj,
             'code': code,
             'dy': dy,
-            'p_vp': p_vp,
+            'p_vp': price / value_per_quota,
             'last_price': price,
             'date': datetime.now(),
             'news': news
